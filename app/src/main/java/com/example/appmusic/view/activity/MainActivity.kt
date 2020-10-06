@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import com.example.appmusic.R
 import com.example.appmusic.view.fragment.AllSongFragment
 import com.example.appmusic.view.fragment.FavoriteFragment
@@ -50,14 +49,8 @@ class MainActivity : AppCompatActivity() {
         bundle.putInt("index", index)
         bundle.putParcelableArrayList("listSong", listSong as java.util.ArrayList<out Parcelable>)
         var intent = Intent(this, PlayingActivity::class.java)
-        var intentService = Intent(this, MyService::class.java)
         intent.putExtra("data", bundle)
-        intentService.putExtra("data", bundle)
         startActivity(intent)
-        bindService(
-            intentService, PlayingActivity.serviceConnection,
-            BIND_AUTO_CREATE
-        )
     }
 
     fun setDrawer() {

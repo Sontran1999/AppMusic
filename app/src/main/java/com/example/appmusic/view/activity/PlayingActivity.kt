@@ -1,6 +1,7 @@
 package com.example.appmusic.view.activity
 
 import android.content.ComponentName
+import android.content.Intent
 import android.content.ServiceConnection
 import android.media.MediaPlayer
 import android.os.Bundle
@@ -14,7 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
@@ -56,6 +57,12 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
 //        setObservers()
+        var bundle = intent.getBundleExtra("data")
+        var intentService = Intent(this, MyService::class.java)
+        intentService.putExtra("data", bundle)
+        bindService(
+            intentService,serviceConnection,BIND_AUTO_CREATE
+        )
     }
 
 
