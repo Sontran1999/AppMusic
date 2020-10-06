@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 //
 //        })
 //    }
-
+    
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.action_bar_menu, menu)
         val manager = getSystemService(SEARCH_SERVICE) as SearchManager
