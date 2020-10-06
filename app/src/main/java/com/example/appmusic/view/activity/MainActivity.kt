@@ -14,37 +14,38 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProviders
 import com.example.appmusic.R
 import com.example.appmusic.view.fragment.AllSongFragment
 import com.example.appmusic.view.fragment.FavoriteFragment
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
-import com.example.appmusic.viewmodel.ViewModel
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-    private val checkFlag = false
-    private var repeatFlag = false
-    private var playContinueFlag = false
-    private var favFlag = true
-    private var playlistFlag = false
+//    private val checkFlag = false
+//    private var repeatFlag = false
+//    private var playContinueFlag = false
+//    private var favFlag = true
+//    private var playlistFlag = false
     private lateinit var drawer: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
     lateinit var navigationView: NavigationView
-    lateinit var viewModel: ViewModel
+//    val viewModel: ViewModelMusic by lazy {
+//        ViewModelProviders.of(this, ViewModelMusic.ViewModelFactory(this.application))
+//            .get(ViewModelMusic::class.java)
+//    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        viewModel = ViewModel()
         loadFragment(AllSongFragment(onItemClick))
         setDrawer()
     }
 
     private val onItemClick: (Int, ArrayList<Song>) -> Unit = { index, listSong ->
-        PlayingActivity.mediaPlayer.stop()
         var bundle: Bundle = Bundle()
         bundle.putInt("index", index)
         bundle.putParcelableArrayList("listSong", listSong as java.util.ArrayList<out Parcelable>)
@@ -54,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         intentService.putExtra("data", bundle)
         startActivity(intent)
         bindService(
-            intentService, viewModel.serviceConnection,
+            intentService, PlayingActivity.serviceConnection,
             BIND_AUTO_CREATE
         )
     }
@@ -139,7 +140,7 @@ class MainActivity : AppCompatActivity() {
 //
 //        })
 //    }
-    
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.action_bar_menu, menu)
         val manager = getSystemService(SEARCH_SERVICE) as SearchManager
