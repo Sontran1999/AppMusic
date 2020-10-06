@@ -1,15 +1,23 @@
 package com.example.appmusic.view.activity
 
+import android.content.ComponentName
+import android.content.ServiceConnection
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.os.Parcelable
+import android.util.Log
 import android.view.View
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
+import com.example.appmusic.service.MyService
 import kotlinx.android.synthetic.main.activity_playing.*
 import java.text.SimpleDateFormat
 
@@ -17,17 +25,37 @@ import java.text.SimpleDateFormat
 class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     var index = 0
     lateinit var listSong: ArrayList<Song>
-    companion object  {
+//    val viewModel: ViewModelMusic by lazy {
+//        ViewModelProviders.of(this, ViewModelMusic.ViewModelFactory(this.application))
+//            .get(ViewModelMusic::class.java)
+//    }
+
+    companion object {
+        var mBound: Boolean = false
         var mediaPlayer: MediaPlayer = MediaPlayer()
+        var mService: MyService= MyService()
+        var serviceConnection: ServiceConnection = object : ServiceConnection {
+            override fun onServiceConnected(className: ComponentName, iBinder: IBinder) {
+                val binder: MyService.MyBinder = iBinder as MyService.MyBinder
+                mService = binder.getService()
+                mBound= true
+            }
+
+            override fun onServiceDisconnected(arg0: ComponentName) {
+
+            }
+        }
+
     }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playing)
-
         initMediaPlayer()
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
+//        setObservers()
     }
 
 
@@ -44,6 +72,18 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
 //        mediaPlayer.start()
 
     }
+
+//    fun setObservers() {
+//        viewModel.mBinder?.observe(this,object: Observer <MyService.MyBinder> {
+//            override fun onChanged(t: MyService.MyBinder?) {
+//                if (t!=null){
+//                    mService = t.getService()
+//                    mBound = true
+//                }
+//            }
+//        })
+//    }
+
 
     fun setMusic(song: Song) {
         try {
@@ -95,14 +135,19 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     override fun onClick(p0: View?) {
         when (p0?.id) {
             R.id.btn_play -> {
-                if (mediaPlayer.isPlaying) {
-                    mediaPlayer.pause()
-                    btn_play.setImageResource(R.drawable.play_icon)
-                } else {
-                    mediaPlayer.start()
-                    btn_play.setImageResource(R.drawable.pause_icon)
+                if(mBound){
+                    if (mService.isPlaying()) {
+                        mService.pause()
+                        btn_play.setImageResource(R.drawable.play_icon)
+                        Toast.makeText(this, "222", Toast.LENGTH_SHORT).show()
+                    } else {
+                        mService.play()
+                        btn_play.setImageResource(R.drawable.pause_icon)
+                        Toast.makeText(this, "111", Toast.LENGTH_SHORT).show()
 //                    playCycle()
+                    }
                 }
+
             }
             R.id.btn_next -> {
                 btn_play.setImageResource(R.drawable.play_icon)
@@ -134,10 +179,12 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         handler.postDelayed(object : Runnable {
             override fun run() {
                 tv_current_time.setText(getTimeFormatted(mediaPlayer.currentPosition))// set thời gian hiện tại bằng vs thời gian nhạc đang phát
-                sb_controller.progress = mediaPlayer.currentPosition// progress dịch con trỏ đến với thời gian hiện tại nhạc phát
+                sb_controller.progress =
+                    mediaPlayer.currentPosition// progress dịch con trỏ đến với thời gian hiện tại nhạc phát
                 handler.postDelayed(this, 500)
             }
         }, 100)
 
     }
+
 }
