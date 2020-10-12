@@ -37,7 +37,7 @@ class FavoriteFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() 
         recyclerView.layoutManager = LinearLayoutManager(view.context)
         songsList?.add(Song("1","1","1"))
         getMusic()
-        var songAdapter = songsList?.let { SongAdapter(it,onClick) }
+        var songAdapter = songsList?.let { SongAdapter(view.context,it,onClick) }
         recyclerView.adapter = songAdapter
     }
     private val onItemClick: (Song) -> Unit = {

@@ -3,6 +3,7 @@ package com.example.appmusic.view.activity
 import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
@@ -11,6 +12,7 @@ import android.view.MenuItem
 import android.widget.SearchView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -24,19 +26,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-//    private val checkFlag = false
-//    private var repeatFlag = false
-//    private var playContinueFlag = false
-//    private var favFlag = true
-//    private var playlistFlag = false
     private lateinit var drawer: DrawerLayout
     private lateinit var toggle: ActionBarDrawerToggle
     lateinit var navigationView: NavigationView
-//    val viewModel: ViewModelMusic by lazy {
-//        ViewModelProviders.of(this, ViewModelMusic.ViewModelFactory(this.application))
-//            .get(ViewModelMusic::class.java)
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -51,6 +43,10 @@ class MainActivity : AppCompatActivity() {
         var intent = Intent(this, PlayingActivity::class.java)
         intent.putExtra("data", bundle)
         startActivity(intent)
+        var intentService = Intent(this, MyService::class.java)
+        intentService.putExtra("data", bundle)
+        ContextCompat.startForegroundService(this, intentService)
+        bindService(intentService, PlayingActivity.serviceConnection, BIND_AUTO_CREATE)
     }
 
     fun setDrawer() {

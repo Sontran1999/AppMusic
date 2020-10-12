@@ -40,7 +40,7 @@ class AllSongFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(view.context)
 //        songsList.add(Song("1","1","1"))
         getMusic()
-        var songAdapter: SongAdapter = SongAdapter(songsList, onClick)
+        var songAdapter: SongAdapter = SongAdapter(view.context,songsList, onClick)
         recyclerView.adapter = songAdapter
     }
 

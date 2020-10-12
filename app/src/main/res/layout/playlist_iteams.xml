@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/img_music"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="10dp"
         android:padding="5dp"
@@ -64,6 +64,7 @@
         android:layout_height="1dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="5dp"
         android:background="#58d1d1d1"
         app:layout_constraintLeft_toRightOf="@+id/img_music"
         app:layout_constraintRight_toRightOf="parent"
