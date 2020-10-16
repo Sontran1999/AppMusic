@@ -7,11 +7,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="ActionBar"
-        parent="@style/Widget.AppCompat.Light.ActionBar">
-        <item name="android:background">@color/colorPrimary</item>
-        <item name="background">@color/colorAccent</item>
-    </style>
+
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>

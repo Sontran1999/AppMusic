@@ -44,6 +44,7 @@ class AllSongFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() {
         recyclerView.adapter = songAdapter
     }
 
+
     fun getMusic() {
         val songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val songCursor: Cursor? = context?.contentResolver?.query(songUri, null, null, null, null)

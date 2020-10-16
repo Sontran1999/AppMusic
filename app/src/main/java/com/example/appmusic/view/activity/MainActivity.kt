@@ -1,15 +1,20 @@
 package com.example.appmusic.view.activity
 
 import android.app.SearchManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.res.Configuration
-import android.os.Build
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -17,10 +22,10 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.appmusic.R
-import com.example.appmusic.view.fragment.AllSongFragment
-import com.example.appmusic.view.fragment.FavoriteFragment
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
+import com.example.appmusic.view.fragment.AllSongFragment
+import com.example.appmusic.view.fragment.FavoriteFragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -36,7 +41,34 @@ class MainActivity : AppCompatActivity() {
         setDrawer()
     }
 
-    private val onItemClick: (Int, ArrayList<Song>) -> Unit = { index, listSong ->
+    override fun onResume() {
+        super.onResume()
+        MyService.onPreparedListener ={
+            initMusic()
+        }
+
+    }
+
+    var receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when(intent?.action){
+                MyService.ACTION_MEDIA -> {
+                    Toast.makeText(context,"sơn",Toast.LENGTH_LONG).show()
+                    var intent = Intent(context, PlayingActivity::class.java)
+                    startActivity(intent)
+                }
+            }
+        }
+
+    }
+
+    fun initMusic(){
+        var intentFilter = IntentFilter()
+        intentFilter.addAction(MyService.ACTION_MEDIA)
+        registerReceiver(receiver, intentFilter)
+    }
+
+    private val onItemClick: (Int, ArrayList<Song>) -> Unit = { index, listSong->
         var bundle: Bundle = Bundle()
         bundle.putInt("index", index)
         bundle.putParcelableArrayList("listSong", listSong as java.util.ArrayList<out Parcelable>)
@@ -47,6 +79,7 @@ class MainActivity : AppCompatActivity() {
         intentService.putExtra("data", bundle)
         ContextCompat.startForegroundService(this, intentService)
         bindService(intentService, PlayingActivity.serviceConnection, BIND_AUTO_CREATE)
+
     }
 
     fun setDrawer() {
@@ -154,12 +187,9 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         when (item.itemId) {
-            R.id.menu_favorites -> {
-                Log.d("acc", "haaa")
-                return true
-            }
 
         }
         return super.onOptionsItemSelected(item)
     }
+    
 }

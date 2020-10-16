@@ -13,7 +13,6 @@ import java.lang.Exception
 
 
 object Utils {
-
     fun songArt(path: String): Bitmap? {
         val retriever = MediaMetadataRetriever()
         val inputStream: InputStream

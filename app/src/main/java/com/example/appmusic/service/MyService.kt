@@ -1,17 +1,32 @@
 package com.example.appmusic.service
 
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Binder
+import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
+import android.util.Log
 import android.widget.Toast
+import com.example.appmusic.R
 import com.example.appmusic.model.Song
+import com.example.appmusic.view.activity.MainActivity
+import com.example.appmusic.view.activity.PlayingActivity
+import kotlinx.android.synthetic.main.fragment_playback_controls.view.*
 
 class MyService : Service(), MediaPlayer.OnPreparedListener{
     companion object {
         var onPreparedListener: (() -> Unit)? = null
+        val CHANNEL_ID = "channel1"
+        val ACTION_PREVIUOS = "actionprevious"
+        val ACTION_PLAY = "actionplay"
+        val ACTION_NEXT = "actionnext"
+        val ACTION_FIRST_ACTION = "action"
+        val ACTION_MEDIA = "actionmedia"
     }
 
     var mBinder: IBinder = MyBinder()
@@ -19,9 +34,13 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
     var index = 0
     var listSong: ArrayList<Song> = arrayListOf()
     var notification: CreateNotification? = null
+
+
+
     override fun onCreate() {
         super.onCreate()
         mediaPlayer = MediaPlayer()
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -31,20 +50,24 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
             this.listSong = bundle.getParcelableArrayList<Parcelable>("listSong") as ArrayList<Song>
         }
         runMusic(index)
-        return super.onStartCommand(intent, flags, startId)
+        return START_REDELIVER_INTENT
     }
 
     fun runMusic(index: Int){
-        notification = CreateNotification(this, listSong[index])
-        startForeground(1, notification?.builder())
-        if (mediaPlayer.isPlaying) {
-            mediaPlayer.stop()
-        }
-        mediaPlayer.reset()
-        mediaPlayer.setDataSource(listSong[index].path)
-        mediaPlayer.setOnPreparedListener(this)
-        mediaPlayer.prepareAsync()
+        try {
+            notification = CreateNotification(this, listSong[index],this@MyService)
+            startForeground(1, notification?.builder())
+            if (mediaPlayer.isPlaying) {
+                mediaPlayer.stop()
+            }
+            mediaPlayer.reset()
+            mediaPlayer.setDataSource(listSong[index].path)
+            mediaPlayer.setOnPreparedListener(this)
+            mediaPlayer.prepareAsync()
 
+        }catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -85,6 +108,8 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
     }
 
     fun next():Boolean{
+        Log.d("Binh", "Current: $index ${listSong.size}")
+
         if (index + 1 < listSong.size) {
             runMusic(index + 1)
             index++
@@ -104,12 +129,6 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
             return false
         }
     }
-    fun completion():Boolean{
-        mediaPlayer.setOnCompletionListener {
-            return@setOnCompletionListener
-        }
-        return false
-    }
 
     inner class MyBinder : Binder() {
         fun getService(): MyService {
@@ -120,6 +139,14 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
     override fun onPrepared(p0: MediaPlayer?) {
         p0?.start()
         onPreparedListener?.let { it() }
+        if(isPlaying()){
+            Thread{
+                var intent = Intent()
+                intent.action = ACTION_MEDIA
+                intent.putExtra("name","name")
+                sendBroadcast(intent)
+            }.start()
+        }
     }
 
 }

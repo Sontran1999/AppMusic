@@ -2,6 +2,9 @@ package com.example.appmusic.adapter
 
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
 import com.example.appmusic.viewmodel.Utils
+import java.io.ByteArrayOutputStream
 
 class SongAdapter(
     var context: Context,
@@ -46,5 +50,13 @@ class SongAdapter(
 
     override fun getItemCount(): Int {
         return mSong.size
+    }
+
+    private fun imageToBitmap(image: ImageView): ByteArray {
+        val bitmap = (image.drawable as BitmapDrawable).bitmap
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+        Log.d("aaa", stream.toByteArray().toString())
+        return stream.toByteArray()
     }
 }
