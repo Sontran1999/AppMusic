@@ -34,4 +34,6 @@ class ViewModel : ViewModel() {
         tmpOut.copyTo(outputBitmap)
         return outputBitmap
     }
+
+
 }

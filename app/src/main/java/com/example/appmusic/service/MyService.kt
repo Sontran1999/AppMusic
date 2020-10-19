@@ -1,24 +1,17 @@
 package com.example.appmusic.service
 
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.os.Binder
-import android.os.Bundle
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
-import android.widget.Toast
-import com.example.appmusic.R
 import com.example.appmusic.model.Song
 import com.example.appmusic.view.activity.MainActivity
-import com.example.appmusic.view.activity.PlayingActivity
-import kotlinx.android.synthetic.main.fragment_playback_controls.view.*
 
-class MyService : Service(), MediaPlayer.OnPreparedListener{
+
+class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
     companion object {
         var onPreparedListener: (() -> Unit)? = null
         val CHANNEL_ID = "channel1"
@@ -27,6 +20,10 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
         val ACTION_NEXT = "actionnext"
         val ACTION_FIRST_ACTION = "action"
         val ACTION_MEDIA = "actionmedia"
+        val PREVIUOS = "privious"
+        val NEXT = "next"
+        val AUTO = "auto"
+        val PLAY = "play"
     }
 
     var mBinder: IBinder = MyBinder()
@@ -36,26 +33,38 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
     var notification: CreateNotification? = null
 
 
-
     override fun onCreate() {
         super.onCreate()
         mediaPlayer = MediaPlayer()
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        var bundle = intent?.getBundleExtra("data")
-        if (bundle != null) {
-            this.index = bundle.getInt("index")
-            this.listSong = bundle.getParcelableArrayList<Parcelable>("listSong") as ArrayList<Song>
+        var intent = Intent()
+        if (listSong.size != 0) {
+            intent.action = ACTION_MEDIA
+            intent.putExtra("song", listSong[index])
+            intent.putExtra("index", index)
+            sendBroadcast(intent)
+
+            if (isPlaying()) {
+                intent.action = PLAY
+                intent.putExtra("run", 0)
+                sendBroadcast(intent)
+            } else {
+                intent.action = PLAY
+                intent.putExtra("run", 1)
+                sendBroadcast(intent)
+            }
         }
-        runMusic(index)
+
         return START_REDELIVER_INTENT
     }
 
-    fun runMusic(index: Int){
+    fun runMusic(index: Int, listSong: ArrayList<Song>) {
         try {
-            notification = CreateNotification(this, listSong[index],this@MyService)
+            this.index = index
+            this.listSong = listSong
+            notification = CreateNotification(this, listSong[index], this@MyService)
             startForeground(1, notification?.builder())
             if (mediaPlayer.isPlaying) {
                 mediaPlayer.stop()
@@ -64,8 +73,9 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
             mediaPlayer.setDataSource(listSong[index].path)
             mediaPlayer.setOnPreparedListener(this)
             mediaPlayer.prepareAsync()
+            mediaPlayer.setOnCompletionListener(this)
 
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -88,9 +98,10 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
         mediaPlayer.pause()
     }
 
-    fun stop(){
+    fun stop() {
         mediaPlayer.stop()
     }
+
     fun play() {
         mediaPlayer.start()
     }
@@ -107,23 +118,20 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
         return mediaPlayer.isPlaying
     }
 
-    fun next():Boolean{
-        Log.d("Binh", "Current: $index ${listSong.size}")
-
+    fun next(index: Int, listSong: ArrayList<Song>): Boolean {
         if (index + 1 < listSong.size) {
-            runMusic(index + 1)
-            index++
+            runMusic(index + 1, listSong)
+            Log.d("activity", "bb")
             return true
-        }
-        else{
+        } else {
             return false
         }
     }
 
-    fun previous():Boolean{
+    fun previous(index: Int, listSong: ArrayList<Song>): Boolean {
         if (index - 1 >= 0) {
-           runMusic(index - 1)
-            index--
+            runMusic(index - 1, listSong)
+            Log.d("activity", "aa")
             return true
         } else {
             return false
@@ -139,14 +147,14 @@ class MyService : Service(), MediaPlayer.OnPreparedListener{
     override fun onPrepared(p0: MediaPlayer?) {
         p0?.start()
         onPreparedListener?.let { it() }
-        if(isPlaying()){
-            Thread{
-                var intent = Intent()
-                intent.action = ACTION_MEDIA
-                intent.putExtra("name","name")
-                sendBroadcast(intent)
-            }.start()
-        }
+    }
+
+    override fun onCompletion(mp: MediaPlayer?) {
+        next(index, listSong)
+        var intent = Intent()
+        intent.action = AUTO
+        intent.putExtra("index", index)
+        sendBroadcast(intent)
     }
 
 }

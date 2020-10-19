@@ -6,15 +6,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar2"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
 
     <FrameLayout
         android:id="@+id/display"
         android:layout_width="296dp"
         android:layout_height="296dp"
+
         app:layout_constraintBottom_toTopOf="@+id/tvTitle"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar2">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
@@ -47,8 +57,6 @@
             android:background="@android:color/transparent"
             android:maxHeight="1dp"
             android:progress="0"
-
-
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
@@ -89,11 +97,9 @@
         android:id="@+id/rl_layout"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:id="@+id/ll_player_controls"
@@ -133,9 +139,9 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@id/ll_player_controls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@id/ll_player_controls"
             android:layout_marginTop="30dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">

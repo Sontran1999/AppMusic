@@ -40,9 +40,7 @@ class FavoriteFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() 
         var songAdapter = songsList?.let { SongAdapter(view.context,it,onClick) }
         recyclerView.adapter = songAdapter
     }
-    private val onItemClick: (Song) -> Unit = {
-        loadFragment(ControlFragment())
-    }
+    
     fun loadFragment(fragment: Fragment) {
         var fragmentManager = activity?.supportFragmentManager
         val fragmentTransaction = fragmentManager?.beginTransaction()

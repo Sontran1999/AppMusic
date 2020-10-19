@@ -5,7 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_marginTop="10dp">
 
     <ImageView
@@ -27,7 +27,7 @@
         android:layout_marginLeft="15dp"
         android:layout_marginTop="10dp"
         android:text="Title"
-        android:textColor="#000000"
+        android:textColor="#ffffff"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@+id/img_music"
@@ -40,7 +40,7 @@
         android:layout_below="@id/tv_music_name"
         android:singleLine="true"
         android:text="SubTitle"
-        android:textColor="#9c9b9b"
+        android:textColor="#ffffff"
         android:textSize="12sp"
         android:textStyle="normal"
         android:layout_marginLeft="15dp"

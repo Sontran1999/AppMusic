@@ -1,4 +1,4 @@
-package com.example.appmusic.viewmodel
+package com.example.appmusic.common
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -24,7 +24,7 @@ object Utils {
                 bitmap = BitmapFactory.decodeStream(inputStream)
                 retriever.release()
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         return bitmap

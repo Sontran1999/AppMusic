@@ -8,12 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
-import android.support.v4.media.session.MediaSessionCompat
 import androidx.core.app.NotificationCompat
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
-import com.example.appmusic.view.activity.PlayingActivity
-import com.example.appmusic.viewmodel.Utils
+import com.example.appmusic.common.Utils
 
 class CreateNotification(var context: Context, var song: Song, var mService: MyService) {
 
@@ -57,7 +55,7 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
                 .setContentTitle(song.title)
                 .setContentText(song.subTitle)
                 .setOnlyAlertOnce(true)
-                .addAction(R.drawable.previous_icon,"Previous",pendingIntentPrevious)
+                .addAction(R.drawable.previous_icon, "Previous", pendingIntentPrevious)
                 .addAction(setButton(), "Play", pendingIntentPlay)
                 .addAction(R.drawable.next_icon, "Next", pendingIntentNext)
                 .setColor(Color.RED)

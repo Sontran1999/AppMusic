@@ -6,4 +6,4 @@ class Song(
     var title: String? = null,
     val subTitle: String? = null,
     val path: String? = null
-): Serializable
+) : Serializable

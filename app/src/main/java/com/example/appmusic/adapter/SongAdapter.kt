@@ -14,7 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
-import com.example.appmusic.viewmodel.Utils
+import com.example.appmusic.common.Utils
 import java.io.ByteArrayOutputStream
 
 class SongAdapter(
@@ -52,11 +52,4 @@ class SongAdapter(
         return mSong.size
     }
 
-    private fun imageToBitmap(image: ImageView): ByteArray {
-        val bitmap = (image.drawable as BitmapDrawable).bitmap
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-        Log.d("aaa", stream.toByteArray().toString())
-        return stream.toByteArray()
-    }
 }
