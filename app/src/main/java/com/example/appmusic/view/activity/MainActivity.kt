@@ -244,7 +244,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun next() {
-        check = false
+        btnPlay.setImageResource(R.drawable.play_icon)
         if (listSong.size != 0) {
             if (mService.next(index, listSong)) {
                 setMusicPlayer(listSong[index + 1])
