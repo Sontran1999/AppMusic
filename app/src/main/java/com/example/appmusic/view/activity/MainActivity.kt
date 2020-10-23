@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -30,6 +31,7 @@ import com.example.appmusic.view.fragment.FavoriteFragment
 import com.example.appmusic.common.Utils
 import com.example.appmusic.viewmodel.ViewModel
 import com.google.android.material.navigation.NavigationView
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.albumArt
 import kotlinx.android.synthetic.main.activity_main.btnNext
@@ -44,9 +46,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var navigationView: NavigationView
     var index = 0
     var listSong: ArrayList<Song> = arrayListOf()
-    var check = -1
+    var check = false
     var viewModel: ViewModel? = null
-
+    var flag = 1
     companion object {
         var mBound: Boolean = false
         var mService: MyService = MyService()
@@ -121,15 +123,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 MyService.PLAY -> {
                     if (intent.getIntExtra("run", 0) == 1) {
                         btnPlay.setImageResource(R.drawable.play_icon)
-                        check = 0
+                        check = false
                     } else {
                         btnPlay.setImageResource(R.drawable.pause_icon)
-                        check = 1
+                        check = true
                     }
                 }
                 MyService.AUTO -> {
                     index = intent.getIntExtra("index", 0)
                     setMusicPlayer(listSong[index])
+                }
+                MyService.ACTION_FLAG -> {
+                    flag = intent.getIntExtra("flag", 0)
                 }
             }
         }
@@ -145,6 +150,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         intentFilter.addAction(MyService.NEXT)
         intentFilter.addAction(MyService.AUTO)
         intentFilter.addAction(MyService.PLAY)
+        intentFilter.addAction(MyService.ACTION_FLAG)
         registerReceiver(receiver, intentFilter)
         var intentService = Intent(this, MyService::class.java)
         ContextCompat.startForegroundService(this, intentService)
@@ -153,14 +159,20 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setMusicPlayer(song: Song) {
-        albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
-//        btnPlay.setImageResource(R.drawable.pause_icon)
         tv_Title.text = song.title
         tv_Artist.text = song.subTitle
-        var image = song.path?.let { Utils.songArt(it)?.let { viewModel?.blur(this, it) } }
-        recyclerView.background = BitmapDrawable(resources, image)
-        layoutMusic.background = BitmapDrawable(resources, image)
-        toolbar.background = BitmapDrawable(resources, image)
+        btnPlay.setImageResource(R.drawable.pause_icon)
+        check = true
+        if (song.image != null) {
+            layoutMusic.setBackgroundResource(R.color.gray_color)
+            Picasso.with(this).load(song.image).into(albumArt)
+        } else {
+            albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
+            var image = song.path?.let { Utils.songArt(it)?.let { viewModel?.blur(this, it) } }
+            recyclerView.background = BitmapDrawable(resources, image)
+            layoutMusic.background = BitmapDrawable(resources, image)
+            toolbar.background = BitmapDrawable(resources, image)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -169,14 +181,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         this.listSong = listSong
         mService.runMusic(index, listSong)
         setFocus(true)
-        check = 1
+        check = true
         btnPlay.setImageResource(R.drawable.pause_icon)
         setMusicPlayer(listSong[index])
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setDrawer() {
-
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         drawer = findViewById(R.id.drawer_layout)
         setSupportActionBar(findViewById(R.id.toolbar))
         toggle = ActionBarDrawerToggle(
@@ -278,7 +293,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 var bundle: Bundle = Bundle()
                 if (listSong.size != 0) {
                     bundle.putInt("index", index)
-                    bundle.putInt("check", check)
+                    bundle.putBoolean("check", check)
+                    bundle.putInt("flag",flag)
                     bundle.putParcelableArrayList(
                         "listSong",
                         listSong as java.util.ArrayList<out Parcelable>
@@ -294,6 +310,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                         "listSong",
                         mService.listSong as java.util.ArrayList<out Parcelable>
                     )
+                    bundle.putInt("flag", mService.flag)
                 }
                 var intent = Intent(this, PlayingActivity::class.java)
                 intent.putExtra("data", bundle)
@@ -307,18 +324,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             if (mService.isPlaying()) {
                 mService.pause()
                 btnPlay.setImageResource(R.drawable.play_icon)
-                check = 0
+                check = false
             } else {
                 mService.play()
                 btnPlay.setImageResource(R.drawable.pause_icon)
-                check = 1
+                check = true
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun next() {
-        btnPlay.setImageResource(R.drawable.play_icon)
+        check = false
         if (listSong.size != 0) {
             if (mService.next(index, listSong)) {
                 setMusicPlayer(listSong[index + 1])

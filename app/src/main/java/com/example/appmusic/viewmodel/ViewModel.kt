@@ -20,8 +20,8 @@ import retrofit2.Response
 
 
 class ViewModel : ViewModel() {
-    private val BITMAP_SCALE = 0.01f
-    private val BLUR_RADIUS = 25f
+    private val BITMAP_SCALE = 0.015f
+    private val BLUR_RADIUS = 10f
     var mAPI: APIService? = ApiUtils().getAPIService()
     var music: MutableLiveData<List<Episodes>> = MutableLiveData()
 

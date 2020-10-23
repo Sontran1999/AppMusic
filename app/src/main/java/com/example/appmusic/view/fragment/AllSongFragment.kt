@@ -74,7 +74,7 @@ class AllSongFragment(var tyle: Int, val onClick: (Int, ArrayList<Song>) -> Unit
                 getMusic()
                 songAdapter!!.setList(songsList,0)
                 var image =
-                    songsList[1].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(view.context, it) } }
+                    songsList[0].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(view.context, it) } }
                 recyclerView.background =  BitmapDrawable(resources,image)
             } else {
                 Toast.makeText(activity, "Online", Toast.LENGTH_SHORT).show()
@@ -89,10 +89,6 @@ class AllSongFragment(var tyle: Int, val onClick: (Int, ArrayList<Song>) -> Unit
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @SuppressLint("ResourceAsColor")
     fun loadAPI() {
-//        tv_music_name.setTextColor(R.color.color_black)
-//        tv_music_subtitle.setTextColor(R.color.color_black)
-//        tv_Title.setTextColor(R.color.color_black)
-//        tv_Artist.setTextColor(R.color.color_black)
         viewModel?.music?.observe(this, {
             if (it != null) {
                 mListEpisodes = it as ArrayList<Episodes>

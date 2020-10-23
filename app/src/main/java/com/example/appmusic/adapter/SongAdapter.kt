@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.appmusic.R
 import com.example.appmusic.common.Utils
 import com.example.appmusic.model.Song
+import com.squareup.picasso.Picasso
 import java.net.URL
 
 
@@ -47,7 +48,7 @@ class SongAdapter(
             holder.img_music.setImageBitmap(mSong[position].path?.let { Utils.songArt(it) })
         }
         else{
-            holder.img_music.setImageResource(R.drawable.ic_default_art)
+            Picasso.with(context).load(mSong[position].image).into(holder.img_music)
         }
     }
 

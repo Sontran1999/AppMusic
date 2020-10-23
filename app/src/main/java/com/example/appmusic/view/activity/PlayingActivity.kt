@@ -7,6 +7,7 @@ import android.os.*
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.SeekBar
@@ -18,6 +19,7 @@ import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
 import com.example.appmusic.common.Utils
 import com.example.appmusic.viewmodel.ViewModel
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_playing.*
 import kotlinx.android.synthetic.main.activity_playing.albumArt
@@ -30,27 +32,38 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     var animation: Animation? = null
     var viewModel: ViewModel? = null
     var rotation: Float = 0F
-
+    var flag = 1
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playing)
-        initBroadCast()
         initMediaPlayer()
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
         btn_previous.setOnClickListener(this)
         btn_replay.setOnClickListener(this)
+        btn_setting.setOnClickListener(this)
         setSupportActionBar(findViewById(R.id.toolbar2))
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setTitle("")
-        animation = AnimationUtils.loadAnimation(this, R.anim.rotate)
-//        albumArt.startAnimation(animation)
         viewModel = ViewModel()
-        var image =
-            listSong[index].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(this, it) } }
-        background?.background = BitmapDrawable(resources, image)
+        if (listSong[index].image != null) {
+            background.setBackgroundResource(R.color.gray_color)
+        } else {
+            var image =
+                listSong[index].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(this, it) } }
+            background?.background = BitmapDrawable(resources, image)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        initBroadCast()
     }
 
     fun initBroadCast() {
@@ -70,10 +83,10 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         if (bundle != null) {
             this.index = bundle.getInt("index")
             this.listSong = bundle.getParcelableArrayList<Parcelable>("listSong") as ArrayList<Song>
-            if(bundle.getInt("check") == 1){
+            this.flag = bundle.getInt("flag")
+            if (bundle.getBoolean("check")) {
                 btn_play.setImageResource(R.drawable.pause_icon)
-            }
-            else{
+            } else {
                 btn_play.setImageResource(R.drawable.play_icon)
             }
 
@@ -84,17 +97,31 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
 
     fun setTotalTime() {
         tv_total_time.setText(getTimeFormatted(MainActivity.mService.getSumTime()))//sum time
+        conTrol()
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setMusic(song: Song) {
         try {
             rotation = 0F
-            btn_play.setImageResource(R.drawable.pause_icon)
             tvTitle.setText(song.title)
             tvSubTitle.setText(song.subTitle)
-            albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
-            conTrol()
+            when {
+                flag == 1 -> {
+                    btn_setting.setImageResource(R.drawable.ic_repeat)
+                }
+                flag == 2 -> {
+                    btn_setting.setImageResource(R.drawable.ic_repeat_once)
+                }
+                else -> {
+                    btn_setting.setImageResource(R.drawable.ic_shuffle)
+                }
+            }
+            if (song.image != null) {
+                Picasso.with(this).load(song.image).into(albumArt)
+            } else {
+                albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -102,7 +129,6 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     fun conTrol() {
-//        btn_play.setImageResource(R.drawable.pause_icon)
         sb_controller.max =
             MainActivity.mService.getSumTime()// gan tong seekbar bang tong thoi gian
         playCycle()
@@ -126,31 +152,19 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    override fun onClick(p0: View?) {
-        when (p0?.id) {
-            R.id.btn_play -> {
-                play()
-            }
-            R.id.btn_next -> {
-                next()
-                var intent = Intent()
-                intent.action = MyService.NEXT
-                sendBroadcast(intent)
-                setTotalTime()
-            }
-            R.id.btn_previous -> {
-                var intent = Intent()
-                intent.action = MyService.PREVIUOS
-                sendBroadcast(intent)
-                previous()
-                setTotalTime()
-            }
-            R.id.btn_replay -> {
-                if (MainActivity.mService.isPlaying()) {
-                    MainActivity.mService.stop()
+    fun setBackGroud() {
+        setMusic(listSong[index])
+        if (listSong[index].image != null) {
+            background.setBackgroundResource(R.color.gray_color)
+        } else {
+            var image =
+                listSong[index].path?.let {
+                    Utils.songArt(it)?.let { viewModel!!.blur(this, it) }
                 }
-                MainActivity.mService.runMusic(index, listSong)
-            }
+            background?.background = BitmapDrawable(resources, image)
+        }
+        MyService.onPreparedListener = {
+            setTotalTime()
         }
     }
 
@@ -159,13 +173,11 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
             if (MainActivity.mService.isPlaying()) {
                 MainActivity.mService.pause()
                 btn_play.setImageResource(R.drawable.play_icon)
-//                albumArt.clearAnimation()
             } else {
                 intent.putExtra("run", 1)
                 sendBroadcast(intent)
                 MainActivity.mService.play()
                 btn_play.setImageResource(R.drawable.pause_icon)
-//                albumArt.startAnimation(animation)
             }
         }
     }
@@ -174,14 +186,9 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     fun next() {
         btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.next(index, listSong)) {
-            setMusic(listSong[index + 1])
-            var image = listSong[index + 1].path?.let {
-                Utils.songArt(it)?.let { viewModel!!.blur(this, it) }
-            }
-            background.background = BitmapDrawable(resources, image)
             index++
-//            albumArt.clearAnimation()
-//            albumArt.startAnimation(animation)
+            setBackGroud()
+            btn_play.setImageResource(R.drawable.pause_icon)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
         }
@@ -191,14 +198,9 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     fun previous() {
         btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.previous(index, listSong)) {
-            setMusic(listSong[index - 1])
-            var image = listSong[index - 1].path?.let {
-                Utils.songArt(it)?.let { viewModel!!.blur(this, it) }
-            }
-            background.background = BitmapDrawable(resources, image)
             index--
-//            albumArt.clearAnimation()
-//            albumArt.startAnimation(animation)
+            setBackGroud()
+            btn_play.setImageResource(R.drawable.pause_icon)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
         }
@@ -217,9 +219,9 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 sb_controller.progress =
                     MainActivity.mService.getCurrentTime()// progress dịch con trỏ đến với thời gian hiện tại nhạc phát
                 handler.postDelayed(this, 50)
-                if(MainActivity.mService.isPlaying()){
+                if (MainActivity.mService.isPlaying()) {
                     rotation += 0.25F
-                    if(rotation == 360F){
+                    if (rotation == 360F) {
                         rotation = 0F
                     }
                 }
@@ -244,31 +246,65 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
             when (intent?.action) {
                 MyService.ACTION_NEXT -> {
                     next()
-                    setTotalTime()
                 }
                 MyService.ACTION_PREVIUOS -> {
                     previous()
-                    setTotalTime()
                 }
                 MyService.ACTION_PLAY -> {
-                    play()
+                    if (MainActivity.mService.isPlaying()) {
+                        btn_play.setImageResource(R.drawable.pause_icon)
+                    } else {
+                        btn_play.setImageResource(R.drawable.play_icon)
+                    }
                 }
                 MyService.AUTO -> {
-                        index = intent.getIntExtra("index", 0)
-                        setMusic(listSong[index])
-                        var image = context?.let {
-                            listSong[index].path?.let { it1 ->
-                                Utils.songArt(it1)?.let { it1 ->
-                                    viewModel?.blur(
-                                        it,
-                                        it1
-                                    )
-                                }
-                            }
-                        }
-                        background.background = BitmapDrawable(resources, image)
-                        setTotalTime()
+                    index = intent.getIntExtra("index", 0)
+                    setBackGroud()
                 }
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    override fun onClick(p0: View?) {
+        when (p0?.id) {
+            R.id.btn_play -> {
+                play()
+            }
+            R.id.btn_next -> {
+                next()
+                var intent = Intent()
+                intent.action = MyService.NEXT
+                sendBroadcast(intent)
+            }
+            R.id.btn_previous -> {
+                var intent = Intent()
+                intent.action = MyService.PREVIUOS
+                sendBroadcast(intent)
+                previous()
+            }
+            R.id.btn_replay -> {
+                if (MainActivity.mService.isPlaying()) {
+                    MainActivity.mService.stop()
+                }
+                MainActivity.mService.runMusic(index, listSong)
+            }
+            R.id.btn_setting -> {
+                flag++
+                when {
+                    flag == 1 -> {
+                        btn_setting.setImageResource(R.drawable.ic_repeat)
+                    }
+                    flag == 2 -> {
+                        btn_setting.setImageResource(R.drawable.ic_repeat_once)
+
+                    }
+                    else -> {
+                        btn_setting.setImageResource(R.drawable.ic_shuffle)
+                        flag = 0
+                    }
+                }
+                MainActivity.mService.checkFlag(flag)
             }
         }
     }

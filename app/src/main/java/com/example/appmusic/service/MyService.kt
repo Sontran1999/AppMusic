@@ -7,8 +7,10 @@ import android.os.Binder
 import android.os.IBinder
 import android.os.Parcelable
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import com.example.appmusic.model.Song
 import com.example.appmusic.view.activity.MainActivity
+import com.example.appmusic.view.activity.PlayingActivity
 
 
 class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
@@ -24,6 +26,7 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
         val NEXT = "next"
         val AUTO = "auto"
         val PLAY = "play"
+        val ACTION_FLAG = "flag"
     }
 
     var mBinder: IBinder = MyBinder()
@@ -31,11 +34,14 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
     var index = 0
     var listSong: ArrayList<Song> = arrayListOf()
     var notification: CreateNotification? = null
-
+    var isPreparing = false
+    var flag = 1
 
     override fun onCreate() {
         super.onCreate()
         mediaPlayer = MediaPlayer()
+        mediaPlayer.setOnPreparedListener(this)
+        mediaPlayer.setOnCompletionListener(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -45,7 +51,6 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
             intent.putExtra("song", listSong[index])
             intent.putExtra("index", index)
             sendBroadcast(intent)
-
             if (isPlaying()) {
                 intent.action = PLAY
                 intent.putExtra("run", 0)
@@ -55,6 +60,9 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
                 intent.putExtra("run", 1)
                 sendBroadcast(intent)
             }
+            intent.action = ACTION_FLAG
+            intent.putExtra("flag",flag)
+            sendBroadcast(intent)
         }
 
         return START_REDELIVER_INTENT
@@ -71,9 +79,8 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
             }
             mediaPlayer.reset()
             mediaPlayer.setDataSource(listSong[index].path)
-            mediaPlayer.setOnPreparedListener(this)
             mediaPlayer.prepareAsync()
-            mediaPlayer.setOnCompletionListener(this)
+            isPreparing = true
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -81,12 +88,7 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
     }
 
     override fun onBind(intent: Intent?): IBinder? {
-
         return mBinder
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
@@ -121,7 +123,6 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
     fun next(index: Int, listSong: ArrayList<Song>): Boolean {
         if (index + 1 < listSong.size) {
             runMusic(index + 1, listSong)
-            Log.d("activity", "bb")
             return true
         } else {
             return false
@@ -131,7 +132,6 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
     fun previous(index: Int, listSong: ArrayList<Song>): Boolean {
         if (index - 1 >= 0) {
             runMusic(index - 1, listSong)
-            Log.d("activity", "aa")
             return true
         } else {
             return false
@@ -146,15 +146,33 @@ class MyService : Service(), MediaPlayer.OnPreparedListener, MediaPlayer.OnCompl
 
     override fun onPrepared(p0: MediaPlayer?) {
         p0?.start()
+        isPreparing = false
         onPreparedListener?.let { it() }
     }
 
+    fun checkFlag(flags: Int) {
+        this.flag = flags
+    }
+
     override fun onCompletion(mp: MediaPlayer?) {
-        next(index, listSong)
+        if (isPreparing) return
         var intent = Intent()
         intent.action = AUTO
+        when {
+            flag == 1 -> {
+                next(index, listSong)
+            }
+            flag == 2 -> {
+                runMusic(index, listSong)
+            }
+            else -> {
+                index = (0 until listSong.size - 1).random()
+                runMusic(index, listSong)
+            }
+        }
         intent.putExtra("index", index)
         sendBroadcast(intent)
     }
+
 
 }

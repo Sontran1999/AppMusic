@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.example.appmusic.R
 import com.example.appmusic.model.Song
 import com.example.appmusic.common.Utils
+import com.example.appmusic.view.activity.MainActivity
 
 class CreateNotification(var context: Context, var song: Song, var mService: MyService) {
 
@@ -34,11 +35,22 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
     //next
     var intentNext = Intent()
         .setAction(MyService.ACTION_NEXT)
-
     var pendingIntentNext = PendingIntent.getBroadcast(
         context, 0,
         intentNext, PendingIntent.FLAG_UPDATE_CURRENT
     )
+
+    val resultIntent = Intent(
+        context,
+        MainActivity::class.java
+    ).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+    val resultPendingIntent =
+        PendingIntent.getActivity(
+            context,
+            1,
+            resultIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
     fun builder(): Notification {
         createNotificationChannel()
@@ -49,14 +61,14 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
         )
         val builder: NotificationCompat.Builder =
             NotificationCompat.Builder(context, MyService.CHANNEL_ID)
-                .setContentIntent(pendingIntent)
                 .setSmallIcon(R.drawable.ic_music_note)
                 .setLargeIcon(song.path?.let { Utils.songArt(it) })
                 .setContentTitle(song.title)
                 .setContentText(song.subTitle)
                 .setOnlyAlertOnce(true)
+                .setContentIntent(resultPendingIntent)
                 .addAction(R.drawable.previous_icon, "Previous", pendingIntentPrevious)
-                .addAction(setButton(), "Play", pendingIntentPlay)
+                .addAction(notificationAction(MyService.ACTION_PLAY))
                 .addAction(R.drawable.next_icon, "Next", pendingIntentNext)
                 .setColor(Color.RED)
                 .setStyle(
@@ -92,4 +104,27 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
             return R.drawable.play_icon
     }
 
+    private fun playerAction(action: String): PendingIntent {
+
+        val pauseIntent = Intent()
+        pauseIntent.action = action
+
+        return PendingIntent.getBroadcast(
+            context, 0,
+            intentPlay, PendingIntent.FLAG_UPDATE_CURRENT
+        )
+    }
+
+    private fun notificationAction(action: String): NotificationCompat.Action {
+        var icon = R.drawable.pause_icon
+        when (action) {
+            MyService.ACTION_PLAY -> {
+                if (MainActivity.mService.isPlaying())
+                    icon = R.drawable.pause_icon
+                else
+                    icon = R.drawable.play_icon
+            }
+        }
+        return NotificationCompat.Action.Builder(icon, action, playerAction(action)).build()
+    }
 }
