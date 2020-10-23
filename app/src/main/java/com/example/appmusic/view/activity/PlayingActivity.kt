@@ -1,6 +1,7 @@
 package com.example.appmusic.view.activity
 
 import android.content.*
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.os.*
 import android.util.Log
@@ -17,6 +18,7 @@ import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
 import com.example.appmusic.common.Utils
 import com.example.appmusic.viewmodel.ViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_playing.*
 import kotlinx.android.synthetic.main.activity_playing.albumArt
 import java.text.SimpleDateFormat
@@ -27,6 +29,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var listSong: ArrayList<Song>
     var animation: Animation? = null
     var viewModel: ViewModel? = null
+    var rotation: Float = 0F
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -43,7 +46,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setTitle("")
         animation = AnimationUtils.loadAnimation(this, R.anim.rotate)
-        albumArt.startAnimation(animation)
+//        albumArt.startAnimation(animation)
         viewModel = ViewModel()
         var image =
             listSong[index].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(this, it) } }
@@ -86,6 +89,8 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setMusic(song: Song) {
         try {
+            rotation = 0F
+            btn_play.setImageResource(R.drawable.pause_icon)
             tvTitle.setText(song.title)
             tvSubTitle.setText(song.subTitle)
             albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
@@ -154,19 +159,20 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
             if (MainActivity.mService.isPlaying()) {
                 MainActivity.mService.pause()
                 btn_play.setImageResource(R.drawable.play_icon)
-                albumArt.clearAnimation()
+//                albumArt.clearAnimation()
             } else {
                 intent.putExtra("run", 1)
                 sendBroadcast(intent)
                 MainActivity.mService.play()
                 btn_play.setImageResource(R.drawable.pause_icon)
-                albumArt.startAnimation(animation)
+//                albumArt.startAnimation(animation)
             }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun next() {
+        btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.next(index, listSong)) {
             setMusic(listSong[index + 1])
             var image = listSong[index + 1].path?.let {
@@ -174,8 +180,8 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
             }
             background.background = BitmapDrawable(resources, image)
             index++
-            albumArt.clearAnimation()
-            albumArt.startAnimation(animation)
+//            albumArt.clearAnimation()
+//            albumArt.startAnimation(animation)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
         }
@@ -183,6 +189,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun previous() {
+        btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.previous(index, listSong)) {
             setMusic(listSong[index - 1])
             var image = listSong[index - 1].path?.let {
@@ -190,8 +197,8 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
             }
             background.background = BitmapDrawable(resources, image)
             index--
-            albumArt.clearAnimation()
-            albumArt.startAnimation(animation)
+//            albumArt.clearAnimation()
+//            albumArt.startAnimation(animation)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
         }
@@ -209,7 +216,14 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 tv_current_time.setText(getTimeFormatted(MainActivity.mService.getCurrentTime()))// set thời gian hiện tại bằng vs thời gian nhạc đang phát
                 sb_controller.progress =
                     MainActivity.mService.getCurrentTime()// progress dịch con trỏ đến với thời gian hiện tại nhạc phát
-                handler.postDelayed(this, 500)
+                handler.postDelayed(this, 50)
+                if(MainActivity.mService.isPlaying()){
+                    rotation += 0.25F
+                    if(rotation == 360F){
+                        rotation = 0F
+                    }
+                }
+                albumArt.rotation = rotation
             }
         }, 100)
 

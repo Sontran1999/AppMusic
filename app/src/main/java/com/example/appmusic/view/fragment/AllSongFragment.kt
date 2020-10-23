@@ -1,6 +1,7 @@
 package com.example.appmusic.view.fragment
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.database.Cursor
@@ -17,8 +18,10 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.appmusic.Episodes
 import com.example.appmusic.R
 import com.example.appmusic.adapter.SongAdapter
 import com.example.appmusic.common.Utils
@@ -26,13 +29,17 @@ import com.example.appmusic.model.Song
 import com.example.appmusic.viewmodel.ViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_playing.*
+import kotlinx.android.synthetic.main.activity_playing.tvTitle
 import kotlinx.android.synthetic.main.fragment_tab.*
+import kotlinx.android.synthetic.main.playlist_iteams.*
 
 
-class AllSongFragment(val onClick: (Int, ArrayList<Song>) -> Unit) : Fragment() {
-    val songsList: ArrayList<Song> = ArrayList()
+class AllSongFragment(var tyle: Int, val onClick: (Int, ArrayList<Song>) -> Unit) : Fragment() {
+    var songsList: ArrayList<Song> = ArrayList()
     private val PERMISSION_REQUEST = 1
     var viewModel: ViewModel? = null
+    private var mListEpisodes: ArrayList<Episodes> = ArrayList()
+    var songAdapter: SongAdapter?= null
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,18 +47,19 @@ class AllSongFragment(val onClick: (Int, ArrayList<Song>) -> Unit) : Fragment() 
         savedInstanceState: Bundle?
     ): View? {
         var view: View = inflater.inflate(R.layout.fragment_tab, container, false)
-        showView(view)
-        Toast.makeText(activity, "All Songs", Toast.LENGTH_SHORT).show()
+        showView(view, tyle)
         return view
     }
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    private fun showView(view: View) {
+    private fun showView(view: View, tyle: Int) {
         viewModel = ViewModel()
         var recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
+        songAdapter = SongAdapter(view.context,onClick)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(view.context)
+        recyclerView.adapter = songAdapter
         val arr = arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
 
         if (ContextCompat.checkSelfPermission(
@@ -61,15 +69,52 @@ class AllSongFragment(val onClick: (Int, ArrayList<Song>) -> Unit) : Fragment() 
         ) {
             ActivityCompat.requestPermissions(view.context as Activity, arr, PERMISSION_REQUEST)
         } else {
-            getMusic()
+            if (tyle == 1) {
+                Toast.makeText(activity, "Local", Toast.LENGTH_SHORT).show()
+                getMusic()
+                songAdapter!!.setList(songsList,0)
+                var image =
+                    songsList[1].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(view.context, it) } }
+                recyclerView.background =  BitmapDrawable(resources,image)
+            } else {
+                Toast.makeText(activity, "Online", Toast.LENGTH_SHORT).show()
+                loadAPI()
+                recyclerView.setBackgroundResource(R.color.gray_color)
+            }
         }
-        var songAdapter: SongAdapter = SongAdapter(view.context, songsList, onClick)
-        recyclerView.adapter = songAdapter
-        var image =
-            songsList[1].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(view.context, it) } }
-        recyclerView.background =  BitmapDrawable(resources,image)
+
+
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @SuppressLint("ResourceAsColor")
+    fun loadAPI() {
+//        tv_music_name.setTextColor(R.color.color_black)
+//        tv_music_subtitle.setTextColor(R.color.color_black)
+//        tv_Title.setTextColor(R.color.color_black)
+//        tv_Artist.setTextColor(R.color.color_black)
+        viewModel?.music?.observe(this, {
+            if (it != null) {
+                mListEpisodes = it as ArrayList<Episodes>
+                Toast.makeText(view?.context, "loading", Toast.LENGTH_LONG).show()
+                mListEpisodes.forEachIndexed { index, episodes ->
+                    songsList.add(
+                        Song(
+                            mListEpisodes[index].name,
+                            mListEpisodes[index].type,
+                            mListEpisodes[index].audio_preview_url,
+                            mListEpisodes[index].images[0].url
+                        )
+                    )
+                }
+                songAdapter?.setList(songsList,1)
+            } else {
+                Toast.makeText(view?.context, "error loading from API", Toast.LENGTH_LONG).show()
+            }
+        })
+        viewModel?.getAll()
+
+    }
 
     fun getMusic() {
         val songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI

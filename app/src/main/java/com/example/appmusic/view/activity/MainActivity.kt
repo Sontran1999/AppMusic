@@ -3,6 +3,7 @@ package com.example.appmusic.view.activity
 import android.app.SearchManager
 import android.content.*
 import android.content.res.Configuration
+import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +34,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.albumArt
 import kotlinx.android.synthetic.main.activity_main.btnNext
 import kotlinx.android.synthetic.main.activity_main.btnPrevious
+import kotlinx.android.synthetic.main.activity_playing.*
 import kotlinx.android.synthetic.main.fragment_tab.*
 
 
@@ -65,7 +67,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         viewModel = ViewModel()
         setContentView(R.layout.activity_main)
-        loadFragment(AllSongFragment(onItemClick))
+        loadFragment(AllSongFragment(1,onItemClick))
         btnPlay.setOnClickListener(this)
         btnNext.setOnClickListener(this)
         btnPrevious.setOnClickListener(this)
@@ -152,6 +154,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setMusicPlayer(song: Song) {
         albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
+//        btnPlay.setImageResource(R.drawable.pause_icon)
         tv_Title.text = song.title
         tv_Artist.text = song.subTitle
         var image = song.path?.let { Utils.songArt(it)?.let { viewModel?.blur(this, it) } }
@@ -173,6 +176,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setDrawer() {
+
         drawer = findViewById(R.id.drawer_layout)
         setSupportActionBar(findViewById(R.id.toolbar))
         toggle = ActionBarDrawerToggle(
@@ -190,10 +194,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.all_Songs -> {
-                    loadFragment(AllSongFragment(onItemClick))
+                    loadFragment(AllSongFragment(1,onItemClick))
                 }
-                R.id.favorite_Song -> {
-                    loadFragment(FavoriteFragment(onItemClick))
+                R.id.API_Song -> {
+                    loadFragment(AllSongFragment(2,onItemClick))
                 }
             }
 
@@ -314,6 +318,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun next() {
+        btnPlay.setImageResource(R.drawable.play_icon)
         if (listSong.size != 0) {
             if (mService.next(index, listSong)) {
                 setMusicPlayer(listSong[index + 1])
@@ -335,6 +340,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun previous() {
+        btnPlay.setImageResource(R.drawable.play_icon)
         if (listSong.size != 0) {
             if (mService.previous(index, listSong)) {
                 Log.d("activity", "primain")
@@ -357,6 +363,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     override fun onDestroy() {
         super.onDestroy()
         unregisterReceiver(receiver)
+//        stopService( Intent(this, MyService::class.java))
     }
 
 }
