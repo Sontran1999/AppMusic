@@ -91,55 +91,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    var receiver = object : BroadcastReceiver() {
-        @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                MyService.ACTION_MEDIA -> {
-                    setFocus(true)
-                    btnPlay.setImageResource(R.drawable.pause_icon)
-                    setMusicPlayer(intent.getSerializableExtra("song") as Song)
-                    index = intent.getIntExtra("index", 0)
-                    listSong = mService.listSong
-
-                }
-                MyService.ACTION_NEXT -> {
-                    next()
-                }
-                MyService.ACTION_PREVIUOS -> {
-                    previous()
-                }
-                MyService.NEXT -> {
-                    mService.next(index, listSong)
-                    index++
-                }
-                MyService.PREVIUOS -> {
-                    mService.previous(index, listSong)
-                    index--
-                }
-                MyService.ACTION_PLAY -> {
-                    play()
-                }
-                MyService.PLAY -> {
-                    if (intent.getIntExtra("run", 0) == 1) {
-                        btnPlay.setImageResource(R.drawable.play_icon)
-                        check = false
-                    } else {
-                        btnPlay.setImageResource(R.drawable.pause_icon)
-                        check = true
-                    }
-                }
-                MyService.AUTO -> {
-                    index = intent.getIntExtra("index", 0)
-                    setMusicPlayer(listSong[index])
-                }
-                MyService.ACTION_FLAG -> {
-                    flag = intent.getIntExtra("flag", 0)
-                }
-            }
-        }
-    }
-
     fun initMusic() {
         var intentFilter = IntentFilter()
         intentFilter.addAction(MyService.ACTION_MEDIA)
@@ -277,48 +228,6 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         return super.onOptionsItemSelected(item)
     }
 
-    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    override fun onClick(v: View?) {
-        when (v?.id) {
-            R.id.btnPlay -> {
-                play()
-            }
-            R.id.btnNext -> {
-                next()
-            }
-            R.id.btnPrevious -> {
-                previous()
-            }
-            R.id.layoutMusic -> {
-                var bundle: Bundle = Bundle()
-                if (listSong.size != 0) {
-                    bundle.putInt("index", index)
-                    bundle.putBoolean("check", check)
-                    bundle.putInt("flag",flag)
-                    bundle.putParcelableArrayList(
-                        "listSong",
-                        listSong as java.util.ArrayList<out Parcelable>
-                    )
-                } else {
-                    bundle.putInt("index", mService.index)
-                    if (mService.isPlaying()) {
-                        bundle.putInt("check", 1)
-                    } else {
-                        bundle.putInt("check", 0)
-                    }
-                    bundle.putParcelableArrayList(
-                        "listSong",
-                        mService.listSong as java.util.ArrayList<out Parcelable>
-                    )
-                    bundle.putInt("flag", mService.flag)
-                }
-                var intent = Intent(this, PlayingActivity::class.java)
-                intent.putExtra("data", bundle)
-                startActivity(intent)
-            }
-        }
-    }
-
     fun play() {
         if (mBound) {
             if (mService.isPlaying()) {
@@ -376,6 +285,98 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    override fun onClick(v: View?) {
+        when (v?.id) {
+            R.id.btnPlay -> {
+                play()
+            }
+            R.id.btnNext -> {
+                next()
+            }
+            R.id.btnPrevious -> {
+                previous()
+            }
+            R.id.layoutMusic -> {
+                var bundle: Bundle = Bundle()
+                if (listSong.size != 0) {
+                    bundle.putInt("index", index)
+                    bundle.putBoolean("check", check)
+                    bundle.putInt("flag",flag)
+                    bundle.putParcelableArrayList(
+                        "listSong",
+                        listSong as java.util.ArrayList<out Parcelable>
+                    )
+                } else {
+                    bundle.putInt("index", mService.index)
+                    if (mService.isPlaying()) {
+                        bundle.putInt("check", 1)
+                    } else {
+                        bundle.putInt("check", 0)
+                    }
+                    bundle.putParcelableArrayList(
+                        "listSong",
+                        mService.listSong as java.util.ArrayList<out Parcelable>
+                    )
+                    bundle.putInt("flag", mService.flag)
+                }
+                var intent = Intent(this, PlayingActivity::class.java)
+                intent.putExtra("data", bundle)
+                startActivity(intent)
+            }
+        }
+    }
+
+    var receiver = object : BroadcastReceiver() {
+        @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                MyService.ACTION_MEDIA -> {
+                    setFocus(true)
+                    btnPlay.setImageResource(R.drawable.pause_icon)
+                    setMusicPlayer(intent.getSerializableExtra("song") as Song)
+                    index = intent.getIntExtra("index", 0)
+                    listSong = mService.listSong
+
+                }
+                MyService.ACTION_NEXT -> {
+                    next()
+                }
+                MyService.ACTION_PREVIUOS -> {
+                    previous()
+                }
+                MyService.NEXT -> {
+                    mService.next(index, listSong)
+                    index++
+                }
+                MyService.PREVIUOS -> {
+                    mService.previous(index, listSong)
+                    index--
+                }
+                MyService.ACTION_PLAY -> {
+                    play()
+                }
+                MyService.PLAY -> {
+                    if (intent.getIntExtra("run", 0) == 1) {
+                        btnPlay.setImageResource(R.drawable.play_icon)
+                        check = false
+                    } else {
+                        btnPlay.setImageResource(R.drawable.pause_icon)
+                        check = true
+                    }
+                }
+                MyService.AUTO -> {
+                    index = intent.getIntExtra("index", 0)
+                    setMusicPlayer(listSong[index])
+                }
+                MyService.ACTION_FLAG -> {
+                    flag = intent.getIntExtra("flag", 0)
+                }
+            }
+        }
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
