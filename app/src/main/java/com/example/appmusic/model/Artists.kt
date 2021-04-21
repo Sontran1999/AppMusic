@@ -13,9 +13,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For support, please feel free to contact me at https://www.linkedin.com/in/syedabsar */
 
 
-data class Images (
+data class Artists (
 
-	@SerializedName("height") val height : Int,
-	@SerializedName("url") val url : String,
-	@SerializedName("width") val width : Int
+	@SerializedName("external_urls") val external_urls : External_urls,
+	@SerializedName("href") val href : String,
+	@SerializedName("id") val id : String,
+	@SerializedName("name") val name : String,
+	@SerializedName("type") val type : String,
+	@SerializedName("uri") val uri : String
 )

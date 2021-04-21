@@ -17,7 +17,7 @@ class RetrofitClient {
                     .newBuilder()
                     .addHeader("Accept","application/json")
                     .addHeader("Content-type","application/json")
-                    .addHeader("Authorization","Bearer BQBrc6megpRhIXYkMZtTdTg6donMFvYi0IcKc8c5OONiCh4riZjqvllqqpkSznXt_OkpliVpjOrRnN6MppbdAyIcQwSbzU_bLxD4caxnnMnZlB2bjBNMPEh__LSUaK3V9J5kvUp7ShdP-SIl_sVnrnvAzRIXO6IbF1vFnmL0UZXd64hcZBfeyzLC76a59V8plbrHcLKAziVQI4qWgECP8Q3F_1r3vsVasvjuWnxNIjUQum5H-xFH9z1ZP4MSYvXRyXs6Jt9Tf8jRMi0H5AtJQeRZ6qnvB1KYpSyoPdg")
+                    .addHeader("Authorization","Bearer BQDfQHlYVQzZquu3NOm2W4gY_HMUhUX5eodjFH_VYOtJMwHEXwcYhPl83_QKAPmR7fvGnrbo8PfyDFd9KKG5twn7MmFcyXE1l95ha_xYNco33t1yYHfRGBuSZpSNaNhOzCuowHav1Za5-P_m3oq3R9txzgkMuwNmJewaoTeIzvPGXH_3DOHoZ6JKSDd2nn-jvAya4S71qr7dbDRbV62kf4bCpb0oLorgfzjkKT0PSWx4wbz7PvUlIMHR0CXcJ_hYUpL39XjLmenJ2yrmRH2pFDfnuCeKKSF7Q-WWVQ9O25wJ")
                     .build()
             )
         }

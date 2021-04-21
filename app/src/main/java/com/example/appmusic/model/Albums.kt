@@ -13,9 +13,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For support, please feel free to contact me at https://www.linkedin.com/in/syedabsar */
 
 
-data class Images (
+data class Albums (
 
-	@SerializedName("height") val height : Int,
-	@SerializedName("url") val url : String,
-	@SerializedName("width") val width : Int
+	@SerializedName("album_type") val album_type : String,
+	@SerializedName("artists") val artists : List<Artists>,
+	@SerializedName("copyrights") val copyrights : List<Copyrights>,
+	@SerializedName("external_ids") val external_ids : External_ids,
+	@SerializedName("external_urls") val external_urls : External_urls,
+	@SerializedName("genres") val genres : List<String>,
+	@SerializedName("href") val href : String,
+	@SerializedName("id") val id : String,
+	@SerializedName("images") val images : List<Images>,
+	@SerializedName("label") val label : String,
+	@SerializedName("name") val name : String,
+	@SerializedName("popularity") val popularity : Int,
+	@SerializedName("release_date") val release_date : String,
+	@SerializedName("release_date_precision") val release_date_precision : String,
+	@SerializedName("total_tracks") val total_tracks : Int,
+	@SerializedName("tracks") val tracks : Tracks,
+	@SerializedName("type") val type : String,
+	@SerializedName("uri") val uri : String
 )

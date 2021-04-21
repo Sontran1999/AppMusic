@@ -11,10 +11,12 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.app_retrofit.data.remote.APIService
-import com.example.app_retrofit.data.remote.ApiUtils
-import com.example.appmusic.Episodes
-import com.example.appmusic.FileJson
+import com.example.appmusic.api.APIService
+import com.example.appmusic.api.ApiUtils
+import com.example.appmusic.model.Items
+import com.example.appmusic.model.Json4Kotlin_Base
+import com.example.appmusic.model.Song
+import com.example.appmusic.model.Tracks
 import retrofit2.Call
 import retrofit2.Response
 
@@ -23,7 +25,8 @@ class ViewModel : ViewModel() {
     private val BITMAP_SCALE = 0.015f
     private val BLUR_RADIUS = 10f
     var mAPI: APIService? = ApiUtils().getAPIService()
-    var music: MutableLiveData<List<Episodes>> = MutableLiveData()
+    var music: MutableLiveData<ArrayList<Items>> = MutableLiveData()
+    var searchSong: MutableLiveData<MutableList<Song>> = MutableLiveData()
 
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -43,29 +46,59 @@ class ViewModel : ViewModel() {
         return outputBitmap
     }
 
-    fun getAll(){
-        mAPI?.getAll()?.enqueue(object : retrofit2.Callback<FileJson>{
+    fun getAll() {
+        mAPI?.getAll()?.enqueue(object : retrofit2.Callback<Json4Kotlin_Base> {
             override fun onResponse(
-                call: Call<FileJson>,
-                response: Response<FileJson>
+                call: Call<Json4Kotlin_Base>,
+                response: Response<Json4Kotlin_Base>
             ) {
                 if (response.isSuccessful) {
-                    Log.d("response", "employees loaded from API: ${response.body()?.episodes?.let {
-                        it[0]
-                    }}")
-                    music?.postValue(response.body()?.episodes)
+                    Log.d(
+                        "response", "employees loaded from API: ${
+                            response.body()?.albums?.get(1)?.tracks?.items.let {
+                                it?.get(0)
+                            }
+                        }"
+                    )
+                    var list: ArrayList<Items> = arrayListOf()
+                    response.body()?.albums?.forEachIndexed { index, albums ->
+                        albums.tracks.items.forEachIndexed { index, items ->
+                            if (items.preview_url != null){
+                                list.add(items)
+                            }
+                        }
+                    }
+                    music.postValue(list)
                 } else {
                     Log.d("MainActivity", response.message() + response.code())
-                    music?.postValue(null)
+                    music.postValue(null)
                 }
             }
 
-            override fun onFailure(call: Call<FileJson>, t: Throwable) {
+            override fun onFailure(call: Call<Json4Kotlin_Base>, t: Throwable) {
                 Log.d("MainActivity", "error loading from API")
                 music.postValue(null)
             }
 
         })
+    }
+
+    fun search(query: String, listSong: ArrayList<Song>) {
+        var listSearch: MutableList<Song> = mutableListOf()
+        listSong.forEachIndexed { index, song ->
+            var name = song.title
+            var nameSinger =song.subTitle
+            if (name != null) {
+                if (name.toUpperCase().contains(query.toUpperCase())) {
+                    listSearch.add(song)
+                } else if (nameSinger != null) {
+                    if (nameSinger.toUpperCase().contains(query.toUpperCase())) {
+                        listSearch.add(song)
+                    }
+                }
+            }
+        }
+        searchSong.postValue(listSearch)
     }
 
 }

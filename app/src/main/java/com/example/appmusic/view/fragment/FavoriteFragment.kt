@@ -1,21 +1,36 @@
 package com.example.appmusic.view.fragment
 
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.appmusic.R
 import com.example.appmusic.adapter.SongAdapter
+import com.example.appmusic.common.Utils
 import com.example.appmusic.model.Song
+import com.example.appmusic.view.activity.MainActivity
+import com.example.appmusic.viewmodel.ViewModel
+import kotlinx.android.synthetic.main.activity_main.*
 
-class FavoriteFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() {
-    val songsList: ArrayList<Song>? = null
+class FavoriteFragment(
+    var listSong: MutableList<Song>,
+    var onClick: (Int, ArrayList<Song>) -> Unit,
+    var onClickFavorite: (MutableList<Song>) -> Unit
+) : Fragment() {
+    var viewModel: ViewModel? = null
+    var image: Bitmap? = null
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -23,46 +38,28 @@ class FavoriteFragment(val onClick: (Int, ArrayList<Song>) -> Unit): Fragment() 
     ): View? {
         var view: View = inflater.inflate(R.layout.fragment_tab, container, false)
         showView(view)
-        Toast.makeText(activity, "Favorites", Toast.LENGTH_SHORT).show()
         return view
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private fun showView(view: View) {
+        viewModel = ViewModel()
         var recyclerView: RecyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(view.context)
-        songsList?.add(Song("1","1","1"))
-        getMusic()
-        var songAdapter = songsList?.let { SongAdapter(view.context,onClick) }
+        var songAdapter = SongAdapter(view.context, onClick, onClickFavorite)
         recyclerView.adapter = songAdapter
-    }
-    
-    fun loadFragment(fragment: Fragment) {
-        var fragmentManager = activity?.supportFragmentManager
-        val fragmentTransaction = fragmentManager?.beginTransaction()
-        fragmentTransaction?.replace(R.id.frameContent, fragment)
-        fragmentTransaction?.commit()
-    }
-    fun getMusic() {
-        val songUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        val songCursor: Cursor? = context?.contentResolver?.query(songUri, null, null, null, null)
-        if (songCursor != null && songCursor.moveToFirst()) {
-            val songTitle = songCursor.getColumnIndex(MediaStore.Audio.Media.TITLE)
-            val songArtist = songCursor.getColumnIndex(MediaStore.Audio.Media.ARTIST)
-            val songPath = songCursor.getColumnIndex(MediaStore.Audio.Media.DATA)
-            do {
-                if (songsList != null) {
-                    songsList.add(
-                        Song(
-                            songCursor.getString(songTitle),
-                            songCursor.getString(songArtist),
-                            songCursor.getString(songPath)
-                        )
-                    )
-                }
-            } while (songCursor.moveToNext())
-            songCursor.close()
+        songAdapter.setList(listSong as ArrayList<Song>, 0)
+        if (listSong.size != 0) {
+            image = listSong[0].path?.let {
+                Utils.songArt(it)?.let { viewModel!!.blur(view.context, it) }
+            }
+            recyclerView.background = BitmapDrawable(resources, image)
+            toolbar?.background = BitmapDrawable(resources, image)
+        } else {
+            Toast.makeText(activity, "Don't have any favorite songs", Toast.LENGTH_SHORT).show()
         }
+
     }
 }

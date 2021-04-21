@@ -1,24 +1,24 @@
 package com.example.appmusic.view.activity
 
 import android.content.*
-import android.graphics.PorterDuff
 import android.graphics.drawable.BitmapDrawable
 import android.os.*
-import android.util.Log
+import android.support.v4.media.session.MediaControllerCompat
+import android.text.format.DateUtils
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.appmusic.R
+import com.example.appmusic.common.Utils
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
-import com.example.appmusic.common.Utils
 import com.example.appmusic.viewmodel.ViewModel
+import com.firekernel.musicplayer.ui.widget.CircularSeekBar
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_playing.*
@@ -33,6 +33,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     var viewModel: ViewModel? = null
     var rotation: Float = 0F
     var flag = 1
+    var onCircularSeekBarChangeListener: CircularSeekBar.OnCircularSeekBarChangeListener? = null
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +60,25 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 listSong[index].path?.let { Utils.songArt(it)?.let { viewModel!!.blur(this, it) } }
             background?.background = BitmapDrawable(resources, image)
         }
+        onCircularSeekBarChangeListener =
+            object : CircularSeekBar.OnCircularSeekBarChangeListener {
+                override fun onProgressChanged(
+                    circularSeekBar: CircularSeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
+                    if (fromUser) {
+                        MainActivity.mService.mediaPlayer.seekTo(progress)// di chuyen nut den doan da chon
+                        tv_current_time.text = getTimeFormatted(progress)
+                    }
+                }
+
+                override fun onStopTrackingTouch(seekBar: CircularSeekBar?) {
+                    MainActivity.mService.mediaPlayer.seekTo(circularProgressBar.progress)
+                }
+
+                override fun onStartTrackingTouch(seekBar: CircularSeekBar?) {}
+            }
     }
 
     override fun onResume() {
@@ -104,13 +124,13 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     fun setMusic(song: Song) {
         try {
             rotation = 0F
-            tvTitle.setText(song.title)
-            tvSubTitle.setText(song.subTitle)
-            when {
-                flag == 1 -> {
+            tvTitle.text = song.title
+            tvSubTitle.text = song.subTitle
+            when (flag) {
+                1 -> {
                     btn_setting.setImageResource(R.drawable.ic_repeat)
                 }
-                flag == 2 -> {
+                2 -> {
                     btn_setting.setImageResource(R.drawable.ic_repeat_once)
                 }
                 else -> {
@@ -131,6 +151,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     fun conTrol() {
         sb_controller.max =
             MainActivity.mService.getSumTime()// gan tong seekbar bang tong thoi gian
+        circularProgressBar.max = MainActivity.mService.getSumTime()
         playCycle()
         sb_controller.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
@@ -149,10 +170,11 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 MainActivity.mService.mediaPlayer.seekTo(sb_controller.progress)
             }
         })
+        circularProgressBar.setOnSeekBarChangeListener(onCircularSeekBarChangeListener)
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-    fun setBackGroud() {
+    fun setBackGround() {
         setMusic(listSong[index])
         if (listSong[index].image != null) {
             background.setBackgroundResource(R.color.gray_color)
@@ -187,7 +209,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.next(index, listSong)) {
             index++
-            setBackGroud()
+            setBackGround()
             btn_play.setImageResource(R.drawable.pause_icon)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
@@ -199,7 +221,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         btn_play.setImageResource(R.drawable.play_icon)
         if (MainActivity.mService.previous(index, listSong)) {
             index--
-            setBackGroud()
+            setBackGround()
             btn_play.setImageResource(R.drawable.pause_icon)
         } else {
             Toast.makeText(this, "PlayList Ended", Toast.LENGTH_SHORT).show()
@@ -218,6 +240,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 tv_current_time.setText(getTimeFormatted(MainActivity.mService.getCurrentTime()))// set thời gian hiện tại bằng vs thời gian nhạc đang phát
                 sb_controller.progress =
                     MainActivity.mService.getCurrentTime()// progress dịch con trỏ đến với thời gian hiện tại nhạc phát
+                circularProgressBar.progress = MainActivity.mService.getCurrentTime()
                 handler.postDelayed(this, 50)
                 if (MainActivity.mService.isPlaying()) {
                     rotation += 0.25F
@@ -259,7 +282,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 }
                 MyService.AUTO -> {
                     index = intent.getIntExtra("index", 0)
-                    setBackGroud()
+                    setBackGround()
                 }
             }
         }

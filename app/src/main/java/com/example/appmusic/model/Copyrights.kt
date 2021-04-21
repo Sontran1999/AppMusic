@@ -13,9 +13,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For support, please feel free to contact me at https://www.linkedin.com/in/syedabsar */
 
 
-data class Images (
+data class Copyrights (
 
-	@SerializedName("height") val height : Int,
-	@SerializedName("url") val url : String,
-	@SerializedName("width") val width : Int
+	@SerializedName("text") val text : String,
+	@SerializedName("type") val type : String
 )

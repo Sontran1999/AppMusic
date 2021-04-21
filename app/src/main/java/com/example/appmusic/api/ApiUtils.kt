@@ -1,6 +1,4 @@
-package com.example.app_retrofit.data.remote
-
-import com.example.appmusic.api.RetrofitClient
+package com.example.appmusic.api
 
 class ApiUtils {
 

@@ -3,13 +3,11 @@ package com.example.appmusic.view.activity
 import android.app.SearchManager
 import android.content.*
 import android.content.res.Configuration
-import android.graphics.PorterDuff
+import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.os.Build
-import android.os.Bundle
-import android.os.IBinder
-import android.os.Parcelable
+import android.os.*
 import android.util.Log
+import android.util.TypedValue
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -23,7 +21,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.appmusic.R
+import com.example.appmusic.adapter.SongAdapter
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
 import com.example.appmusic.view.fragment.AllSongFragment
@@ -36,7 +37,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.albumArt
 import kotlinx.android.synthetic.main.activity_main.btnNext
 import kotlinx.android.synthetic.main.activity_main.btnPrevious
-import kotlinx.android.synthetic.main.activity_playing.*
 import kotlinx.android.synthetic.main.fragment_tab.*
 
 
@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     var check = false
     var viewModel: ViewModel? = null
     var flag = 1
+    var listFavorite: MutableList<Song> = mutableListOf()
+    var image: Bitmap? = null
+
     companion object {
         var mBound: Boolean = false
         var mService: MyService = MyService()
@@ -69,7 +72,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         super.onCreate(savedInstanceState)
         viewModel = ViewModel()
         setContentView(R.layout.activity_main)
-        loadFragment(AllSongFragment(1,onItemClick))
+        loadFragment(AllSongFragment(1, onItemClick, onClickFavorite))
         btnPlay.setOnClickListener(this)
         btnNext.setOnClickListener(this)
         btnPrevious.setOnClickListener(this)
@@ -119,10 +122,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             Picasso.with(this).load(song.image).into(albumArt)
         } else {
             albumArt.setImageBitmap(song.path?.let { Utils.songArt(it) })
-            var image = song.path?.let { Utils.songArt(it)?.let { viewModel?.blur(this, it) } }
+            image = song.path?.let { Utils.songArt(it)?.let { viewModel?.blur(this, it) } }
             recyclerView.background = BitmapDrawable(resources, image)
             layoutMusic.background = BitmapDrawable(resources, image)
             toolbar.background = BitmapDrawable(resources, image)
+            constrain.background = BitmapDrawable(resources, image)
         }
     }
 
@@ -137,12 +141,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         setMusicPlayer(listSong[index])
     }
 
+    private val onClickFavorite: (MutableList<Song>) -> Unit = {
+        this.listFavorite = it
+    }
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun setDrawer() {
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-        )
+        val typedValue = TypedValue()
+        theme.resolveAttribute(R.attr.colorStatusBar, typedValue, true)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            toolbar?.setBackgroundColor(typedValue.data)
+            constrain.setBackgroundColor(typedValue.data)
+        }
         drawer = findViewById(R.id.drawer_layout)
         setSupportActionBar(findViewById(R.id.toolbar))
         toggle = ActionBarDrawerToggle(
@@ -152,18 +162,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.string.nav_drawer_open,
             R.string.nav_drawer_close
         )
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        )
         drawer.addDrawerListener(toggle)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
-        supportActionBar?.setTitle("")
+        supportActionBar?.title = ""
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.all_Songs -> {
-                    loadFragment(AllSongFragment(1,onItemClick))
+                    loadFragment(AllSongFragment(1, onItemClick, onClickFavorite))
                 }
                 R.id.API_Song -> {
-                    loadFragment(AllSongFragment(2,onItemClick))
+                    loadFragment(AllSongFragment(2, onItemClick, onClickFavorite))
+                }
+                R.id.Favorite_Song -> {
+                    loadFragment(FavoriteFragment(listFavorite, onItemClick, onClickFavorite))
                 }
             }
 
@@ -181,7 +198,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
-    fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: Fragment) {
         var fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.frameContent, fragment)
@@ -207,6 +224,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         searchView.setSearchableInfo(manager.getSearchableInfo(componentName))
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
+                viewModel?.search(query, listSong)
                 return false
             }
 
@@ -230,14 +248,14 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
     fun play() {
         if (mBound) {
-            if (mService.isPlaying()) {
+            check = if (mService.isPlaying()) {
                 mService.pause()
                 btnPlay.setImageResource(R.drawable.play_icon)
-                check = false
+                false
             } else {
                 mService.play()
                 btnPlay.setImageResource(R.drawable.pause_icon)
-                check = true
+                true
             }
         }
     }
@@ -303,7 +321,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 if (listSong.size != 0) {
                     bundle.putInt("index", index)
                     bundle.putBoolean("check", check)
-                    bundle.putInt("flag",flag)
+                    bundle.putInt("flag", flag)
                     bundle.putParcelableArrayList(
                         "listSong",
                         listSong as java.util.ArrayList<out Parcelable>

@@ -111,7 +111,7 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
 
         return PendingIntent.getBroadcast(
             context, 0,
-            intentPlay, PendingIntent.FLAG_UPDATE_CURRENT
+            pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
 
@@ -119,7 +119,7 @@ class CreateNotification(var context: Context, var song: Song, var mService: MyS
         var icon = R.drawable.pause_icon
         when (action) {
             MyService.ACTION_PLAY -> {
-                if (MainActivity.mService.isPlaying())
+                if (mService.isPlaying())
                     icon = R.drawable.pause_icon
                 else
                     icon = R.drawable.play_icon

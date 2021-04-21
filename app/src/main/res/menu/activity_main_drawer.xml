@@ -12,6 +12,10 @@
             android:id="@+id/API_Song"
             android:icon="@drawable/ic_library_music"
             android:title="Online Songs" />
+        <item
+            android:id="@+id/Favorite_Song"
+            android:icon="@drawable/ic_library_music"
+            android:title="Favorite Songs" />
     </group>
 
 </menu>
