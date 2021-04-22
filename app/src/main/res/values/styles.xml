@@ -1,16 +1,18 @@
 <resources>
     <!-- Base application theme. -->
+    <attr name="colorStatusBar" format="color"/>
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorStatusBar">#c77f3c</item>
     </style>
 
     <style name="ActionBar"
         parent="@style/Widget.AppCompat.Light.ActionBar">
         <item name="android:background">@color/colorPrimary</item>
-        <item name="background">@color/colorAccent</item>
+        <item name="background">@color/text_color</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
@@ -18,4 +20,8 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="NumberPickerStyle">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>

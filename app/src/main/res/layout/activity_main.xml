@@ -10,6 +10,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/constrain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".view.activity.MainActivity">
@@ -23,49 +24,117 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="20dp"
             tools:ignore="MissingConstraints" />
 
 
-        <!--    <LinearLayout-->
-        <!--        android:id="@+id/ll_tab_layout"-->
-        <!--        android:layout_width="match_parent"-->
-        <!--        android:layout_height="?attr/actionBarSize"-->
-        <!--        app:layout_constraintTop_toBottomOf="@id/rl_layout"-->
-        <!--        android:background="@color/colorPrimary"-->
-        <!--        app:layout_constraintEnd_toEndOf="@+id/toolbar"-->
-        <!--        app:layout_constraintStart_toStartOf="parent">-->
-
-        <!--        <com.google.android.material.tabs.TabLayout-->
-        <!--            android:id="@+id/tabLayout"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:elevation="10dp"-->
-        <!--            app:tabBackground="@color/colorPrimary"-->
-        <!--            app:tabGravity="fill"-->
-        <!--            app:tabIndicatorColor="@color/colorPrimary"-->
-        <!--            app:tabMode="fixed"-->
-        <!--            app:tabSelectedTextColor="@color/text_color"-->
-        <!--            app:tabTextColor="@color/off_color" />-->
-        <!--    </LinearLayout>-->
-
-
-        <!--        <androidx.viewpager.widget.ViewPager-->
-        <!--            android:id="@+id/songs_viewpager"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="675dp"-->
-        <!--            app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--            app:layout_constraintEnd_toEndOf="parent"-->
-        <!--            app:layout_constraintStart_toStartOf="parent"-->
-        <!--            app:layout_constraintTop_toBottomOf="@+id/toolbar"-->
-        <!--            tools:ignore="MissingConstraints" />-->
         <FrameLayout
             android:id="@+id/frameContent"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/layoutMusic"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutMusic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="MissingConstraints">
+
+            <ImageView
+                android:id="@+id/albumArt"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_margin="2dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/ic_default_art" />
+
+            <LinearLayout
+                android:id="@+id/content"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/albumArt"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/tv_Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="bbbbb"
+                    android:textSize="15dp"
+                    android:ellipsize="end"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="#ffffff"
+                    tools:text="Title Here" />
+
+                <TextView
+                    android:id="@+id/tv_Artist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="10dp"
+                    android:text="aaaa"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textColor="#ffffff"
+                    tools:text="SubTitle Here" />
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnPrevious"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#00000000"
+                android:src="@drawable/previous_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnPlay"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <ImageButton
+                android:id="@+id/btnPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#00000000"
+                android:src="@drawable/play_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/btnNext"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <ImageButton
+                android:id="@+id/btnNext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="#00000000"
+                android:src="@drawable/next_icon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:background="#a65c5c61"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/background"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar2"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
 
     <FrameLayout
         android:id="@+id/display"
         android:layout_width="296dp"
         android:layout_height="296dp"
+
         app:layout_constraintBottom_toTopOf="@+id/tvTitle"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar2">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/cardView"
@@ -37,7 +48,7 @@
                 android:src="@drawable/ic_default_art" />
         </androidx.cardview.widget.CardView>
 
-        <com.akaita.android.circularseekbar.CircularSeekBar
+        <com.firekernel.musicplayer.ui.widget.CircularSeekBar
             android:id="@+id/circularProgressBar"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
@@ -46,11 +57,15 @@
             android:background="@android:color/transparent"
             android:maxHeight="1dp"
             android:progress="0"
-
-
+            app:circle_color="#33000000"
+            app:circle_progress_color="@color/colorAccent"
+            app:circle_stroke_width="2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent" />
+            app:layout_constraintRight_toRightOf="parent"
+            app:pointer_color="@color/colorAccent"
+            app:pointer_halo_border_width="1.5"
+            app:pointer_halo_width="0.5"/>
     </FrameLayout>
 
     <TextView
@@ -62,7 +77,8 @@
         android:paddingTop="16dp"
         android:paddingRight="16dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="#000000"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/tvSubTitle"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
@@ -76,7 +92,8 @@
         android:paddingRight="16dp"
         android:paddingBottom="8dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="#000000"
+        android:textColor="#ffffff"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/rl_layout"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
@@ -86,11 +103,9 @@
         android:id="@+id/rl_layout"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:background="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        app:layout_constraintStart_toStartOf="parent">
 
         <LinearLayout
             android:id="@+id/ll_player_controls"
@@ -130,9 +145,9 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@id/ll_player_controls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@id/ll_player_controls"
             android:layout_marginTop="30dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
@@ -141,36 +156,36 @@
                 android:id="@+id/btn_replay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
-                android:src="@drawable/undo_icon" />
+                android:backgroundTint="#00000000"
+                android:src="@drawable/ic_alarm" />
 
             <ImageButton
                 android:id="@+id/btn_previous"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="#00000000"
                 android:src="@drawable/previous_icon" />
 
             <ImageButton
                 android:id="@+id/btn_play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="#00000000"
                 android:src="@drawable/play_icon" />
 
             <ImageButton
                 android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
+                android:backgroundTint="#00000000"
                 android:src="@drawable/next_icon" />
 
             <ImageButton
                 android:id="@+id/btn_setting"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/colorPrimary"
-                android:src="@drawable/ic_settings" />
+                android:backgroundTint="#00000000"
+                android:src="@drawable/ic_repeat" />
         </LinearLayout>
 
     </RelativeLayout>
