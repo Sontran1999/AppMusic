@@ -1,10 +1,12 @@
 package com.example.appmusic.view.activity
 
+import android.app.Activity
 import android.content.*
 import android.graphics.drawable.BitmapDrawable
 import android.os.*
 import android.support.v4.media.session.MediaControllerCompat
 import android.text.format.DateUtils
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -13,10 +15,14 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.example.appmusic.R
+import com.example.appmusic.common.PrefUtils
+import com.example.appmusic.common.PrefsKey.KEY_VALUE_SETTING_REMINDERS
 import com.example.appmusic.common.Utils
 import com.example.appmusic.model.Song
 import com.example.appmusic.service.MyService
+import com.example.appmusic.viewmodel.SettingReminderViewModel
 import com.example.appmusic.viewmodel.ViewModel
 import com.firekernel.musicplayer.ui.widget.CircularSeekBar
 import com.squareup.picasso.Picasso
@@ -29,16 +35,22 @@ import java.text.SimpleDateFormat
 class PlayingActivity : AppCompatActivity(), View.OnClickListener {
     var index = 0
     lateinit var listSong: ArrayList<Song>
-    var animation: Animation? = null
-    var viewModel: ViewModel? = null
+    lateinit var viewModel: ViewModel
     var rotation: Float = 0F
     var flag = 1
+    var checkTimer = false
     var onCircularSeekBarChangeListener: CircularSeekBar.OnCircularSeekBarChangeListener? = null
+    private var mSettingReminder: SettingReminderViewModel? = null
+
+    companion object {
+        const val REQUEST_CODE_SETTING = 1
+    }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_playing)
+        viewModel = ViewModel()
         initMediaPlayer()
         btn_play.setOnClickListener(this)
         btn_next.setOnClickListener(this)
@@ -52,7 +64,8 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         )
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setTitle("")
-        viewModel = ViewModel()
+
+        registerObserve()
         if (listSong[index].image != null) {
             background.setBackgroundResource(R.color.gray_color)
         } else {
@@ -86,6 +99,19 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
         initBroadCast()
     }
 
+    private fun registerObserve() {
+        viewModel.timer.observe(this) {
+            Log.d("son","vo 3")
+            if (it) {
+                btn_play.setImageResource(R.drawable.play_icon)
+                btn_replay.setImageResource(R.drawable.ic_alarm)
+                Log.d("son","vo 4")
+            } else {
+                Log.d("son","vo 5")
+            }
+        }
+    }
+
     fun initBroadCast() {
         var intentFilter = IntentFilter()
         intentFilter.addAction(MyService.ACTION_FIRST_ACTION)
@@ -99,6 +125,7 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun initMediaPlayer() {
+        mSettingReminder = SettingReminderViewModel(this.application)
         var bundle = intent.getBundleExtra("data")
         if (bundle != null) {
             this.index = bundle.getInt("index")
@@ -307,10 +334,17 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 previous()
             }
             R.id.btn_replay -> {
-                if (MainActivity.mService.isPlaying()) {
-                    MainActivity.mService.stop()
+//                if (MainActivity.mService.isPlaying()) {
+//                    MainActivity.mService.stop()
+//                }
+//                MainActivity.mService.runMusic(index, listSong)
+                if (!checkTimer) {
+                    val intent = Intent(this, ReminderActivity::class.java)
+                    startActivityForResult(intent, REQUEST_CODE_SETTING)
+                } else {
+                    mSettingReminder?.cancelReminderSetting()
+                    btn_replay.setImageResource(R.drawable.ic_alarm_true)
                 }
-                MainActivity.mService.runMusic(index, listSong)
             }
             R.id.btn_setting -> {
                 flag++
@@ -320,7 +354,6 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                     }
                     flag == 2 -> {
                         btn_setting.setImageResource(R.drawable.ic_repeat_once)
-
                     }
                     else -> {
                         btn_setting.setImageResource(R.drawable.ic_shuffle)
@@ -330,6 +363,22 @@ class PlayingActivity : AppCompatActivity(), View.OnClickListener {
                 MainActivity.mService.checkFlag(flag)
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE_SETTING && resultCode == Activity.RESULT_OK) {
+            val timeString =
+                data?.getStringExtra(ReminderActivity.EXTRA_VALUE_TIME_REMINDER)
+            timeString?.let {
+                mSettingReminder?.let { reminder ->
+                    reminder.convertStringToCalendar(timeString)
+                    reminder.setTimeReminder()
+                }
+            }
+            checkTimer = true
+            btn_replay.setImageResource(R.drawable.ic_alarm_true)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onDestroy() {

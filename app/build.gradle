@@ -43,6 +43,7 @@ dependencies {
     compile 'com.akaita.android:circular-seek-bar:1.0'
     implementation 'androidx.media:media:1.1.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.9.0'
     def lifecycle_version = "2.2.0"
     // ViewModel
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
@@ -53,4 +54,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation platform('com.google.firebase:firebase-bom:27.0.0')
     implementation 'com.google.firebase:firebase-analytics'
+
+    implementation "androidx.work:work-runtime-ktx:2.1.0-alpha02"
+    implementation "android.arch.work:work-runtime:2.1.0-alpha02"
 }

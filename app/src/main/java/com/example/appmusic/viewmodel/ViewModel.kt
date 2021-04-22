@@ -1,5 +1,6 @@
 package com.example.appmusic.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
@@ -11,6 +12,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.appmusic.api.APIService
 import com.example.appmusic.api.ApiUtils
 import com.example.appmusic.model.Items
@@ -27,7 +29,7 @@ class ViewModel : ViewModel() {
     var mAPI: APIService? = ApiUtils().getAPIService()
     var music: MutableLiveData<ArrayList<Items>> = MutableLiveData()
     var searchSong: MutableLiveData<MutableList<Song>> = MutableLiveData()
-
+    var timer: MutableLiveData<Boolean> = MutableLiveData()
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     fun blur(context: Context, image: Bitmap): Bitmap? {
@@ -101,4 +103,8 @@ class ViewModel : ViewModel() {
         searchSong.postValue(listSearch)
     }
 
+    fun checkTimer(check: Boolean){
+        timer.postValue(check)
+        Log.d("son","vo 2")
+    }
 }
